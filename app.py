@@ -9,12 +9,10 @@ AZUL = "#071d49"
 VERMELHO = "#ff0000"  
 AMARELO = "#ffcc00"
 VERDE = "#009933"
-ACENTO = AZUL                       # cor dominante do painel
+ACENTO = AZUL                       
 SEQ = [AZUL, VERMELHO, AMARELO, VERDE, "#5B6671", "#051821"]
 
 pio.templates.default = "plotly_white"
-
-pio.templates.default = "plotly_white" 
 
 st.set_page_config(page_title="Painel de TCIs", page_icon=":bar_chart:", layout="wide")
 
@@ -267,11 +265,10 @@ with aba_geral:
         )
 with aba_historico:
     # ===================== HISTÓRICO DO ESTABELECIMENTO =====================
-    contagem_historico = df["chave_estabelecimento"].value_counts()
     opcoes = {}
-    for chave in contagem_historico.index:
+    for chave in contagem.index:
         nome = df_filtrado.loc[df_filtrado["chave_estabelecimento"] == chave, "Distribuidora"].iloc[0].strip()
-        qtd = contagem_historico[chave]
+        qtd = contagem[chave]
         opcoes[f"{nome[:45]} — {qtd} TCI(s)"] = chave
 
     escolha_historico = st.selectbox("Selecione um estabelecimento:", options=list(opcoes.keys()), index=None, placeholder="Digite ou escolha um estabelecimento...")
