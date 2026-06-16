@@ -1,9 +1,33 @@
 import pandas as pd  # pyright: ignore[reportMissingImports]
 import streamlit as st   # pyright: ignore[reportMissingImports]
 import plotly.express as px
+import plotly.io as pio
 from leitor import carregar_dados
 
+# Paleta do painel
+ACENTO = "#B3122B"
+SEQ = ["#B3122B", "#5B6671", "#C9A227", "#3B7A57", "#7A4FB3", "#1A1D21"]
+
+pio.templates.default = "plotly_white" 
+
 st.set_page_config(page_title="Painel de TCIs", page_icon=":bar_chart:", layout="wide")
+
+st.markdown(
+    """
+    <style>
+      div[data-testid="stMetric"] {
+          background: #FFFFFF;
+          border: 1px solid #E3E6EA;
+          border-left: 4px solid #B3122B;
+          border-radius: 8px;
+          padding: 0.9rem 1rem;
+      }
+      div[data-testid="stMetricLabel"] p { color: #5B6671; font-weight: 600; }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 st.title("Painel de TCIs")
 
 df = carregar_dados()
@@ -43,11 +67,11 @@ cidades = df_filtrado["Cidade"].nunique()
 
 c1, c2, c3, c4, c5 = st.columns(5)
 with c1:
-    st.metric("Total de TCIs", total_tcis)
+    st.metric("Total de TCIs", f"{total_tcis:,}".replace(",", "."))
 with c2:
-    st.metric("Estabelecimentos únicos", estabelecimentos_unicos)
+    st.metric("Estabelecimentos únicos", f"{estabelecimentos_unicos:,}".replace(",", "."))
 with c3:
-    st.metric("Reincidentes (>1 TCI)", reincidentes)
+    st.metric("Reincidentes (>1 TCI)", f"{reincidentes:,}".replace(",", "."))
 with c4:
     st.metric("Validados", f"{pct_validados:.0f}%")
 with c5:
@@ -67,7 +91,8 @@ fig_mapa = px.scatter_map(
     hover_name="Distribuidora",
     hover_data={"Cidade": True, "Endereço": True, "Batalhão": True, "infracaoObservada": True, "LAT": False, "LONG": False},
     zoom=9.2,
-    height=520
+    height=520,
+    color_discrete_map={"VALIDADO": "#B3122B", "PENDENTE": "#5B6671"}
 )
 fig_mapa.update_traces(marker=dict(size=8, opacity=0.75))
 fig_mapa.update_layout(
@@ -180,7 +205,8 @@ with col_infracao:
         names="infracao",
         values="tcis",
         hole=0.55,
-        height=420
+        height=420,
+        color_discrete_sequence=SEQ
     )
     fig_infracao.update_traces(textinfo="percent")
     fig_infracao.update_layout(
@@ -189,4 +215,31 @@ with col_infracao:
     )
     st.plotly_chart(fig_infracao, width="stretch")
 
-st.dataframe(df_filtrado, width="stretch", hide_index=True)
+# ===================== TABELA =====================
+st.divider()
+st.subheader("Detalhamento")
+
+colunas = ["TCI", "Distribuidora", "Cidade", "Batalhão", "Status",
+           "infracaoObservada", "dataCadastro"]
+tabela = df_filtrado[colunas].sort_values("dataCadastro", ascending=False)
+st.dataframe(tabela, width="stretch", hide_index=True)
+
+st.download_button(
+    "Baixar dados filtrados (CSV)",
+    data=tabela.to_csv(index=False).encode("utf-8-sig"),
+    file_name="tcis_filtrados.csv",
+    mime="text/csv"
+)
+
+# ===================== NOTAS SOBRE A BASE =====================
+with st.expander("ℹ️ Notas sobre a base"):
+    st.markdown(
+        f"""
+        - **{df.attrs.get('duplicatas_removidas', 0)}** registros duplicados removidos na carga (chave: `id`).
+        - **{int((~df['coord_valida']).sum())}** registro(s) sem coordenada válida — ficam de fora apenas do mapa.
+        - Classificação PF/PJ é *best-effort*: **{int((df['tipo_doc'] == 'Indefinido').sum())}** documentos indefinidos (campo de origem irregular).
+        - Matrícula consolidada a partir de duas colunas: vazios caíram de 164 para 5.
+        - Duas redações de infração foram unificadas numa só categoria. (`DISTRIBUIDORA SEM ALVARÁ E FORA DO HORÁRIO -> DISTRIBUIDORA SEM ALVARÁ E FORA DO HORÁRIO DE FUNCIONAMENTO`)
+        - **Atenção a setembro/2025** - volume atípico.
+        """
+    )
