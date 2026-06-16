@@ -32,4 +32,8 @@ def limpar(df: pd.DataFrame) -> pd.DataFrame:
     df.loc[n == 11, "tipo_doc"] = "PF"
     df.loc[n == 14, "tipo_doc"] = "PJ"
 
+    df["LAT"] = pd.to_numeric(df["LAT"], errors="coerce")
+    df["LONG"] = pd.to_numeric(df["LONG"], errors="coerce")
+    df["coord_valida"] = (df["LAT"].between(-16.2, -15.4) & df["LONG"].between(-48.4, -47.2))
+
     return df
