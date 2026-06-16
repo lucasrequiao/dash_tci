@@ -11,6 +11,7 @@ AMARELO = "#ffcc00"
 VERDE = "#009933"
 ACENTO = AZUL                       
 SEQ = [AZUL, VERMELHO, AMARELO, VERDE, "#5B6671", "#051821"]
+SEQ_REVERTIDA = SEQ[::-1]
 
 pio.templates.default = "plotly_white"
 
@@ -26,7 +27,7 @@ st.markdown(
           border-radius: 8px;
           padding: 0.9rem 1rem;
       }
-      div[data-testid="stMetricLabel"] p { color: #5B6671; font-weight: 600; }
+      div[data-testid="stMetricLabel"] p { color: #071d49; font-weight: 900; }
     </style>
     """,
     unsafe_allow_html=True,
@@ -91,20 +92,35 @@ with aba_geral:
 
     # ===================== MAPA =====================
     st.subheader("Distribuição geográfica dos TCIs")
-    mapa_df = df_filtrado[df_filtrado["coord_valida"]]
+    mapa_base = df_filtrado[df_filtrado["coord_valida"]]
+
+    mapa_df = (
+        mapa_base.groupby("chave_estabelecimento")
+            .agg(
+                tcis=("TCI", "size"),
+                LAT=("LAT", "first"),
+                LONG=("LONG", "first"),
+                Distribuidora=("Distribuidora", "first"),
+                Cidade=("Cidade", "first")
+            )
+            .reset_index()
+    )
+    st.write(mapa_df)
 
     fig_mapa = px.scatter_map(
         mapa_df,
         lat="LAT",
         lon="LONG",
-        color="Status",
+        size="tcis",
+        color="tcis",
+        color_continuous_scale="Cividis", #"Bluered" #"Plasma" #Viridis
+        size_max=30,
         hover_name="Distribuidora",
-        hover_data={"Cidade": True, "Endereço": True, "Batalhão": True, "infracaoObservada": True, "LAT": False, "LONG": False},
+        hover_data={"Cidade": True, "tcis": True, "LAT": False, "LONG": False},
         zoom=9.2,
         height=520,
-        color_discrete_map={"VALIDADO": AZUL, "PENDENTE": AMARELO}
+        #color_discrete_map={"VALIDADO": AZUL, "PENDENTE": AMARELO}
     )
-    fig_mapa.update_traces(marker=dict(size=8, opacity=0.75))
     fig_mapa.update_layout(
         map_style="carto-positron", #"open-street-map"
         margin=dict(l=0, r=0, t=0, b=0)
@@ -285,5 +301,5 @@ with aba_historico:
         cols_historico = ["TCI", "dataCadastro", "Cidade", "Endereço", "Status", "infracaoObservada"]
         st.dataframe(
             historico[cols_historico].sort_values("dataCadastro", ascending=False),
-            use_container_width=True, hide_index=True,
+            width="stretch", hide_index=True,
         )
