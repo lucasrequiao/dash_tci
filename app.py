@@ -105,7 +105,6 @@ with aba_geral:
             )
             .reset_index()
     )
-    st.write(mapa_df)
 
     fig_mapa = px.scatter_map(
         mapa_df,
