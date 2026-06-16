@@ -65,6 +65,11 @@ if df_filtrado.empty:
     st.warning("Nenhum TCI corresponde aos filtros selecionados")
     st.stop()
 
+ini_periodo = df_filtrado["dataCadastro"].min().strftime("%d/%m/%Y")
+fim_periodo = df_filtrado["dataCadastro"].max().strftime("%d/%m/%Y")
+st.markdown(f"##### 📅 Período analisado: **{ini_periodo}** a **{fim_periodo}**")
+
+
 total_tcis = len(df_filtrado)
 estabelecimentos_unicos = df_filtrado["chave_estabelecimento"].nunique()
 reincidentes = (df_filtrado["chave_estabelecimento"].value_counts() > 1).sum()
@@ -111,6 +116,9 @@ st.plotly_chart(fig_mapa, width="stretch")
 st.subheader("Evolução mensal")
 serie = df_filtrado.groupby("mes").size().reset_index(name="tcis").sort_values("mes")
 
+borda_dir = serie["mes"].max() + pd.Timedelta(days=7)
+borda_esq = serie["mes"].min() - pd.Timedelta(days=7)
+
 fig_serie = px.area(
     serie,
     x="mes",
@@ -130,7 +138,7 @@ fig_serie.update_layout(
     margin=dict(l=0, r=0, t=10, b=0),
     plot_bgcolor="rgba(0,0,0,0)"
 )
-fig_serie.update_xaxes(dtick="M1", tickformat="%m-%Y")
+fig_serie.update_xaxes(dtick="M1", tickformat="%m-%Y", range=[borda_esq, borda_dir])
 st.plotly_chart(fig_serie, width="stretch")
 
 # ===================== TOP REINCIDENTES =====================
