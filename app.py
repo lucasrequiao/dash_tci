@@ -101,6 +101,27 @@ fig_mapa.update_layout(
 )
 st.plotly_chart(fig_mapa, width="stretch")
 
+# ===================== EVOLUÇÃO MENSAL =====================
+st.subheader("Evolução mensal")
+serie = df_filtrado.groupby("mes").size().reset_index(name="tcis").sort_values("mes")
+
+fig_serie = px.bar(
+    serie,
+    x="mes",
+    y="tcis",
+    text="tcis",
+    height=420
+)
+fig_serie.update_traces(textposition="outside", marker_color=ACENTO)
+fig_serie.update_layout(
+    xaxis_title="",
+    yaxis_title="Nº de TCIs",
+    margin=dict(l=0, r=0, t=10, b=0),
+    plot_bgcolor="rgba(0,0,0,0)"
+)
+fig_serie.update_xaxes(dtick="M1", tickformat="%m-%Y")
+st.plotly_chart(fig_serie, width="stretch")
+
 # ===================== TOP REINCIDENTES =====================
 st.subheader("Top 10 reincidentes")
 contagem = df_filtrado["chave_estabelecimento"].value_counts()
@@ -125,7 +146,7 @@ else:
         text="tcis",
         height=460
     )
-    fig_reincidentes.update_traces(textposition="outside")
+    fig_reincidentes.update_traces(textposition="outside", marker_color=ACENTO)
     fig_reincidentes.update_layout(
         yaxis=dict(autorange="reversed", title=""),
         xaxis_title="Nº de TCIs",
@@ -133,27 +154,6 @@ else:
         plot_bgcolor="rgba(0,0,0,0)"
     )
     st.plotly_chart(fig_reincidentes, width="stretch")
-
-# ===================== EVOLUÇÃO MENSAL =====================
-st.subheader("Evolução mensal")
-serie = df_filtrado.groupby("mes").size().reset_index(name="tcis").sort_values("mes")
-
-fig_serie = px.bar(
-    serie,
-    x="mes",
-    y="tcis",
-    text="tcis",
-    height=420
-)
-fig_serie.update_traces(textposition="outside")
-fig_serie.update_layout(
-    xaxis_title="",
-    yaxis_title="Nº de TCIs",
-    margin=dict(l=0, r=0, t=10, b=0),
-    plot_bgcolor="rgba(0,0,0,0)"
-)
-fig_serie.update_xaxes(dtick="M1", tickformat="%m-%Y")
-st.plotly_chart(fig_serie, width="stretch")
 
 # ===================== CATEGORIA =====================
 col_cidade, col_bpm, col_infracao = st.columns([1.2, 1.2, 1])
@@ -169,6 +169,7 @@ with col_cidade:
         orientation="h",
         height=420
     )
+    fig_cidade.update_traces(marker_color="#758290")
     fig_cidade.update_layout(
         yaxis=dict(autorange="reversed", title=""),
         xaxis_title="TCIs", 
@@ -188,6 +189,7 @@ with col_bpm:
         orientation="h",
         height=420
     )
+    fig_bpm.update_traces(marker_color="#5B6671")
     fig_bpm.update_layout(
         yaxis=dict(autorange="reversed", title=""),
         xaxis_title="TCIs", 
