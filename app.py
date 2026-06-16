@@ -67,8 +67,7 @@ if df_filtrado.empty:
 
 ini_periodo = df_filtrado["dataCadastro"].min().strftime("%d/%m/%Y")
 fim_periodo = df_filtrado["dataCadastro"].max().strftime("%d/%m/%Y")
-st.markdown(f"##### 📅 Período analisado: **{ini_periodo}** a **{fim_periodo}**")
-
+st.caption(f" 📅 Período analisado: **{ini_periodo}** a **{fim_periodo}**")
 
 total_tcis = len(df_filtrado)
 estabelecimentos_unicos = df_filtrado["chave_estabelecimento"].nunique()
