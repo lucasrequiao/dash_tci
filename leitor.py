@@ -1,9 +1,11 @@
 from pathlib import Path
 import pandas as pd  # pyright: ignore[reportMissingImports]
+import streamlit as st
 from limpeza import limpar
 
 PASTA_DADOS = Path(__file__).resolve().parent / "data"
 
+@st.cache_data
 def carregar_dados() -> pd.DataFrame:
     # 1. Varre a pasta data/ e lê TODOS os .csv encontrados
     arquivos = sorted(PASTA_DADOS.glob("*.csv"))
