@@ -5,8 +5,14 @@ import plotly.io as pio
 from leitor import carregar_dados
 
 # Paleta do painel
-ACENTO = "#B3122B"
-SEQ = ["#B3122B", "#5B6671", "#C9A227", "#3B7A57", "#7A4FB3", "#1A1D21"]
+AZUL = "#071d49"
+VERMELHO = "#ff0000"  
+AMARELO = "#ffcc00"
+VERDE = "#009933"
+ACENTO = AZUL                       # cor dominante do painel
+SEQ = [AZUL, VERMELHO, AMARELO, VERDE, "#5B6671", "#051821"]
+
+pio.templates.default = "plotly_white"
 
 pio.templates.default = "plotly_white" 
 
@@ -18,7 +24,7 @@ st.markdown(
       div[data-testid="stMetric"] {
           background: #FFFFFF;
           border: 1px solid #E3E6EA;
-          border-left: 4px solid #B3122B;
+          border-left: 4px solid #071d49;
           border-radius: 8px;
           padding: 0.9rem 1rem;
       }
@@ -92,7 +98,7 @@ fig_mapa = px.scatter_map(
     hover_data={"Cidade": True, "Endereço": True, "Batalhão": True, "infracaoObservada": True, "LAT": False, "LONG": False},
     zoom=9.2,
     height=520,
-    color_discrete_map={"VALIDADO": "#B3122B", "PENDENTE": "#5B6671"}
+    color_discrete_map={"VALIDADO": AZUL, "PENDENTE": AMARELO}
 )
 fig_mapa.update_traces(marker=dict(size=8, opacity=0.75))
 fig_mapa.update_layout(
@@ -105,14 +111,19 @@ st.plotly_chart(fig_mapa, width="stretch")
 st.subheader("Evolução mensal")
 serie = df_filtrado.groupby("mes").size().reset_index(name="tcis").sort_values("mes")
 
-fig_serie = px.bar(
+fig_serie = px.area(
     serie,
     x="mes",
     y="tcis",
+    markers=True,
     text="tcis",
     height=420
 )
-fig_serie.update_traces(textposition="outside", marker_color=ACENTO)
+fig_serie.update_traces(
+    line=dict(color=AZUL, width=2.5),
+    marker=dict(color=AZUL, size=8),
+    textposition="top center"
+)
 fig_serie.update_layout(
     xaxis_title="",
     yaxis_title="Nº de TCIs",
@@ -169,7 +180,7 @@ with col_cidade:
         orientation="h",
         height=420
     )
-    fig_cidade.update_traces(marker_color="#758290")
+    fig_cidade.update_traces(marker_color="#5B6671")
     fig_cidade.update_layout(
         yaxis=dict(autorange="reversed", title=""),
         xaxis_title="TCIs", 
@@ -189,7 +200,7 @@ with col_bpm:
         orientation="h",
         height=420
     )
-    fig_bpm.update_traces(marker_color="#5B6671")
+    fig_bpm.update_traces(marker_color="#051821")
     fig_bpm.update_layout(
         yaxis=dict(autorange="reversed", title=""),
         xaxis_title="TCIs", 
